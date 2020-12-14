@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1b6d0f33-e404-4cdb-b15c-e8e4c1f9f2e0" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="485de769-b896-48e7-8907-98a54df554ca" >
+		<db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+	</db:config>
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="68fd7f6f-d964-4ef8-8d22-6a25ec5b0999" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" database="pilotos" useXaTransactions="true"/>
+	</db:config>
+	<flow name="interciclo_sdv3Flow_GET" doc:id="83f9b367-692e-4fe7-a99e-065175afc0d0" >
+		<http:listener doc:name="Listener" doc:id="3546e808-e978-47ee-9d4c-4008b6dbc3b3" config-ref="HTTP_Listener_config" path="/Flights"/>
+		<set-payload value="Iniciando..." doc:name="Set Payload" doc:id="f0c8a5a7-4bbc-4227-8d21-f299a0da5d4d" />
+		<db:select doc:name="Select_Vuelos" doc:id="26917a52-f2a7-4f4c-9e8e-201a0f35a0f6" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM american]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="77322c44-f630-46cd-b584-af479d83ef2c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="interciclo_sdv3Flow_GET_ID" doc:id="c8a74b81-5761-45c1-9ecb-67e841f9239a" >
+		<http:listener doc:name="Listener" doc:id="3333e093-fd9a-4f6d-9de2-5fefe71b149f" config-ref="HTTP_Listener_config" path="/Flights/{ID}" />
+		<set-payload value="Iniciando..." doc:name="Payload" doc:id="577b4aa4-a87e-4ceb-ab09-f500f1c332cd" />
+		<db:select doc:name="Select_Vuelo_ID" doc:id="7ae1d665-55d1-4220-81b2-dd0e7407b6b9" config-ref="Database_Config" >
+			<db:sql ><![CDATA[SELECT * FROM american WHERE ID = :ID]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'ID' : attributes.uriParams.ID}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="1a2756fc-22b1-414f-875a-0caea98cbea5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
